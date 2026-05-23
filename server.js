@@ -12,7 +12,7 @@ app.use(express.static("public"));
    To move domains: change BASE_URL
 ══════════════════════════════════════════════════════ */
 const PORT     = 3333;
-const API_KEY  = "ghhfhHGFHJGUSHU73754886";
+const API_KEY  = "your-own-api-seceret";
 const BASE_URL = "https://share.cosmoscraft.net";
 
 const ALLOWED_DOMAINS = [
