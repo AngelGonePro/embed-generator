@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CosmosCraft · Embed Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #090b10; --panel: #0d1117; --card: #111827;
+    --border: #1e2d40; --accent: #00d4ff; --accent2: #7c3aed;
+    --text: #e2e8f0; --muted: #64748b; --success: #10b981;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Rajdhani', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  body::before {
+    content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(0,212,255,.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .page { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; padding: 44px 20px 80px; }
+  header { text-align: center; margin-bottom: 36px; }
+  .brand { display: inline-flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+  .brand-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    display: flex; align-items: center; justify-content: center; font-size: 24px;
+    box-shadow: 0 0 28px rgba(124,58,237,.4);
+  }
+  .brand-name {
+    font-family: 'Orbitron', monospace; font-size: 20px; font-weight: 900; letter-spacing: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .brand-sub { font-size: 12px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+  .panel {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 14px; padding: 26px; margin-bottom: 18px; position: relative; overflow: hidden;
+  }
+  .panel::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: .45;
+  }
+  .panel-title {
+    font-family: 'Orbitron', monospace; font-size: 10px; letter-spacing: 3px;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 18px;
+  }
+  textarea {
+    width: 100%; min-height: 72px; padding: 13px 15px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-family: 'Rajdhani', sans-serif; font-size: 15px;
+    resize: vertical; outline: none; transition: border-color .2s;
+  }
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: var(--muted); }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 7px; }
+  .hint code { color: var(--accent); font-size: 11px; }
+  .btn-gen {
+    display: block; width: 100%; margin-top: 14px; padding: 13px;
+    border: none; border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    color: white; font-family: 'Orbitron', monospace; font-size: 11px;
+    font-weight: 700; letter-spacing: 2px; cursor: pointer; transition: all .18s;
+  }
+  .btn-gen:hover { transform: translateY(-1px); box-shadow: 0 8px 26px rgba(0,212,255,.22); }
+  .btn-gen:disabled { opacity: .5; pointer-events: none; }
+  .result {
+    margin-top: 18px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px; animation: up .25s ease;
+  }
+  @keyframes up { from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:translateY(0)} }
+  .result-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .num-badge {
+    font-family: 'Orbitron', monospace; font-size: 12px; color: var(--accent);
+    background: rgba(0,212,255,.07); border: 1px solid rgba(0,212,255,.15);
+    padding: 4px 12px; border-radius: 20px;
+  }
+  .row-lbl { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .link-row { display: flex; align-items: center; gap: 7px; }
+  .link-box {
+    flex: 1; padding: 9px 12px; background: var(--panel); border: 1px solid var(--border);
+    border-radius: 6px; font-family: monospace; font-size: 13px; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; user-select: all;
+    transition: border-color .15s;
+  }
+  .link-box:hover { border-color: var(--accent); }
+  .btn-sm {
+    padding: 8px 14px; background: transparent; border: 1px solid var(--border);
+    border-radius: 6px; color: var(--muted); cursor: pointer; font-size: 12px;
+    font-family: 'Rajdhani', sans-serif; transition: all .15s; white-space: nowrap;
+  }
+  .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-sm.copied { border-color: var(--success); color: var(--success); }
+  .hist-item {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 13px 15px; margin-bottom: 9px;
+  }
+  .hist-top { display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .hist-num { font-family: 'Orbitron', monospace; font-size: 11px; color: var(--accent); }
+  .hist-time { font-size: 11px; color: var(--muted); }
+  .hist-url { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 8px; }
+  .empty { text-align: center; padding: 28px; color: var(--muted); font-size: 14px; }
+  .status { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 22px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); box-shadow: 0 0 7px var(--success); animation: blink 2s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .toast {
+    position: fixed; bottom: 26px; right: 26px; padding: 10px 16px;
+    border-radius: 8px; font-family: 'Rajdhani', sans-serif; font-size: 14px;
+    z-index: 999; background: var(--card); animation: up .22s ease;
+  }
+  .toast.ok  { border: 1px solid var(--success); color: var(--success); }
+  .toast.err { border: 1px solid #ef4444; color: #ef4444; }
+  .clear-btn {
+    background: transparent; border: 1px solid rgba(239,68,68,.3); color: rgba(239,68,68,.5);
+    padding: 4px 12px; border-radius: 6px; font-size: 11px; cursor: pointer;
+    font-family: 'Rajdhani', sans-serif;
+  }
+  .clear-btn:hover { border-color: #ef4444; color: #ef4444; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🪐</div>
+      <div class="brand-name">COSMOSCRAFT</div>
+    </div>
+    <div class="brand-sub">Discord Embed Generator · NextCloud CDN</div>
+  </header>
+
+  <div class="status">
+    <span class="dot"></span> Server online &nbsp;·&nbsp; Ctrl+Enter to generate
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">New Embed</div>
+    <textarea id="urlInput" placeholder="Paste your NextCloud share link&#10;e.g. https://cdntest.cosmoscraft.net/index.php/s/abc123/download"></textarea>
+    <div class="hint">Allowed: <code>cdntest.cosmoscraft.net</code> · <code>cdn.cosmoscraft.net</code></div>
+
+    <div style="margin-top:14px;">
+      <div class="row-lbl" style="margin-bottom:6px;">Custom Slug <span style="color:var(--muted);font-weight:normal;text-transform:none;letter-spacing:0;">(optional — leave blank for auto)</span></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="color:var(--muted);font-size:13px;white-space:nowrap;" id="domainPrefix">share.cosmoscraft.net/</span>
+        <input id="slugInput" type="text" placeholder="my-custom-slug"
+          style="flex:1;padding:9px 12px;background:var(--card);border:1px solid var(--border);
+                 border-radius:8px;color:var(--text);font-family:monospace;font-size:14px;outline:none;
+                 transition:border-color .2s;"
+          oninput="checkSlug(this.value)"
+          onfocus="this.style.borderColor='var(--accent)'"
+          onblur="this.style.borderColor='var(--border)'">
+      </div>
+      <div id="slugStatus" style="font-size:12px;margin-top:5px;height:16px;"></div>
+      <div class="hint" style="margin-top:4px;">2–50 chars · letters, numbers, hyphens, underscores only</div>
+    </div>
+
+    <button class="btn-gen" id="genBtn" onclick="generate()">⚡ &nbsp;Generate Embed Link</button>
+    <div id="resultArea"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title" style="display:flex;justify-content:space-between;align-items:center;">
+      <span>Session History</span>
+      <button class="clear-btn" onclick="clearHist()">Clear</button>
+    </div>
+    <div id="histArea"><div class="empty">No embeds yet this session</div></div>
+  </div>
+
+</div>
+<script>
+// API key stored in sessionStorage — clears when tab closes
+const SESSION_KEY = "cc_key";
+let apiKey = sessionStorage.getItem(SESSION_KEY) || "";
+
+// Prompt for key if not set
+if (!apiKey) {
+  const k = prompt("Enter API key:");
+  if (k) { apiKey = k; sessionStorage.setItem(SESSION_KEY, k); }
+}
+
+const session = [];
+
+let slugCheckTimer = null;
+let slugAvailable = true;
+
+function checkSlug(val) {
+  const status = document.getElementById("slugStatus");
+  const input  = document.getElementById("slugInput");
+  val = val.trim().toLowerCase();
+  if (!val) {
+    status.textContent = "";
+    slugAvailable = true;
+    input.style.borderColor = "var(--border)";
+    return;
+  }
+  if (!/^[a-z0-9_-]{2,50}$/.test(val)) {
+    status.textContent = "⚠️ Only letters, numbers, hyphens, underscores (2–50 chars)";
+    status.style.color = "#f59e0b";
+    slugAvailable = false;
+    input.style.borderColor = "#f59e0b";
+    return;
+  }
+  status.textContent = "Checking...";
+  status.style.color = "var(--muted)";
+  clearTimeout(slugCheckTimer);
+  slugCheckTimer = setTimeout(async () => {
+    try {
+      const r = await fetch(`/api/check-slug?slug=${encodeURIComponent(val)}&key=${encodeURIComponent(apiKey)}`);
+      const d = await r.json();
+      if (d.available) {
+        status.textContent = "✅ Available!";
+        status.style.color = "var(--success)";
+        input.style.borderColor = "var(--success)";
+        slugAvailable = true;
+      } else {
+        status.textContent = `❌ ${d.error || "Already taken"}`;
+        status.style.color = "#ef4444";
+        input.style.borderColor = "#ef4444";
+        slugAvailable = false;
+      }
+    } catch {
+      status.textContent = "Could not check";
+      status.style.color = "var(--muted)";
+    }
+  }, 400);
+}
+
+async function generate() {
+  const url  = document.getElementById("urlInput").value.trim();
+  const slug = document.getElementById("slugInput").value.trim().toLowerCase() || null;
+  if (!url) return toast("Paste a link first", "err");
+  if (slug && !slugAvailable) return toast("Fix the custom slug first", "err");
+
+  const btn = document.getElementById("genBtn");
+  btn.disabled = true;
+  btn.textContent = "⏳ Generating…";
+
+  try {
+    const res = await fetch("/api/create?key=" + encodeURIComponent(apiKey), {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ url, slug })
+    });
+
+    if (res.status === 401) { apiKey = ""; sessionStorage.removeItem(SESSION_KEY); return toast("Wrong API key", "err"); }
+    if (!res.ok) { const t = await res.text(); throw new Error(t); }
+
+    const data = await res.json();
+    // Use embedUrl from server — handles both numeric IDs and custom slugs correctly
+    const embedUrl = data.embedUrl || `${location.origin}/${data.slug || data.num}`;
+    const readyId  = data.num || data.slug; // slug entries have no num
+    session.unshift({ num: data.num, slug: data.slug, origUrl: url, embedUrl, time: new Date() });
+
+    document.getElementById("resultArea").innerHTML = `
+      <div class="result">
+        <div class="result-head">
+          <span class="num-badge">Embed ${data.slug && (!data.num || data.slug !== String(data.num)) ? "/" + data.slug : "#" + data.num}</span>
+          <span style="font-size:12px;color:var(--muted)">${new Date().toLocaleTimeString()}</span>
+        </div>
+        <div id="readyBanner" style="
+          margin-bottom:14px;padding:12px 16px;border-radius:8px;
+          background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);color:#f59e0b;
+          font-size:13px;line-height:1.7;">
+          <strong>⏳ Encoding in progress</strong><br>
+          <span id="readyMsg">Starting encode...</span><br>
+          <span style="font-size:11px;opacity:.8;">
+            ⚠️ <strong>Do NOT paste into Discord yet.</strong>
+            Discord caches broken embeds — wait for the green ready signal below.
+          </span>
+        </div>
+        <div class="row-lbl">Discord Embed Link — copy ONLY after ready signal above</div>
+        <div class="link-row">
+          <span class="link-box" onclick="sel(this)">${embedUrl}</span>
+          <button class="btn-sm" id="copyBtn" disabled style="opacity:.35;cursor:not-allowed;">Copy</button>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px;">
+          Copy button unlocks automatically when encode finishes.
+        </div>
+      </div>`;
+
+    watchReady(readyId, embedUrl);
+    renderHist();
+    document.getElementById("urlInput").value = "";
+    document.getElementById("slugInput").value = "";
+    document.getElementById("slugStatus").textContent = "";
+    slugAvailable = true;
+    const label = data.slug && (!data.num || data.slug !== String(data.num)) ? "/" + data.slug : "#" + data.num;
+    toast("✓ Embed " + label + " generating...");
+
+  } catch(e) {
+    toast("Error: " + e.message, "err");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "⚡ &nbsp;Generate Embed Link";
+  }
+}
+
+let activeSSE = null;
+
+function watchReady(num, embedUrl) {
+  if (activeSSE) { activeSSE.close(); activeSSE = null; }
+  const es = new EventSource(`/ready/${num}`);
+  activeSSE = es;
+
+  es.onmessage = e => {
+    const s = JSON.parse(e.data);
+    const banner = document.getElementById("readyBanner");
+    const msg    = document.getElementById("readyMsg");
+    const btn    = document.getElementById("copyBtn");
+    if (!banner) return;
+
+    if (s.ready) {
+      banner.style.background   = "rgba(16,185,129,.08)";
+      banner.style.borderColor  = "rgba(16,185,129,.3)";
+      banner.style.color        = "#10b981";
+      banner.innerHTML = `<strong>✅ Ready to paste into Discord!</strong><br>
+        The video is fully encoded. You can now safely paste the embed link.`;
+      if (btn) {
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        btn.style.cursor  = "pointer";
+        btn.onclick = () => cp(embedUrl, btn);
+      }
+      es.close(); activeSSE = null;
+      toast("✅ Embed #" + num + " is ready!");
+    } else {
+      if (msg) msg.textContent = s.message || "Encoding...";
+    }
+  };
+
+  es.onerror = () => {
+    es.close();
+    // Auto-reconnect after 3s — handles page revisits and network blips
+    setTimeout(() => {
+      if (document.getElementById("readyBanner") && !isCacheReady) {
+        watchReady(num, embedUrl);
+      }
+    }, 3000);
+  };
+}
+
+function renderHist() {
+  const a = document.getElementById("histArea");
+  if (!session.length) { a.innerHTML = '<div class="empty">No embeds yet this session</div>'; return; }
+  a.innerHTML = session.map(s => `
+    <div class="hist-item">
+      <div class="hist-top">
+        <span class="hist-num">Embed ${s.slug && s.slug !== String(s.num) ? "/" + s.slug : "#" + s.num}</span>
+        <span class="hist-time">${s.time.toLocaleTimeString()}</span>
+      </div>
+      <div class="hist-url">${s.origUrl}</div>
+      <div class="link-row">
+        <span class="link-box" onclick="sel(this)">${s.embedUrl}</span>
+        <button class="btn-sm" onclick="cp('${s.embedUrl}',this)">Copy</button>
+      </div>
+    </div>`).join("");
+}
+
+function clearHist() { session.length = 0; renderHist(); }
+
+function sel(el) {
+  const r = document.createRange(); r.selectNodeContents(el);
+  const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+}
+
+function cp(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const o = btn.textContent; btn.textContent = "✓ Copied"; btn.classList.add("copied");
+    setTimeout(() => { btn.textContent = o; btn.classList.remove("copied"); }, 2000);
+  });
+}
+
+function toast(msg, type = "ok") {
+  const t = document.createElement("div");
+  t.className = `toast ${type}`; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2800);
+}
+
+document.addEventListener("keydown", e => {
+  if (e.ctrlKey && e.key === "Enter") generate();
+});
+
+// Show the actual domain in the slug prefix
+(async () => {
+  try {
+    const r = await fetch("/api/info");
+    const d = await r.json();
+    if (d.baseUrl) {
+      const host = d.baseUrl.replace(/^https?:\/\//, "");
+      document.getElementById("domainPrefix").textContent = host + "/";
+    }
+  } catch {}
+})();
+</script>
+</body>
+</html>
